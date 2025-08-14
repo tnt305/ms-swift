@@ -2,10 +2,10 @@
 import time
 from abc import ABC, abstractmethod
 from typing import Dict, List, Literal
-
 import numpy as np
 import torch
 import torch.distributed as dist
+from sklearn.metrics import f1_score
 from transformers.trainer_utils import EvalPrediction
 
 from swift.utils import Serializer, get_current_device, get_logger
