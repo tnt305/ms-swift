@@ -167,6 +167,44 @@ def compute_acc(preds,
             acc_list.append(np.all(preds[i, m] == labels[i, m]))
     return {f'{acc_strategy}_acc' if preds.ndim >= 2 else 'acc': acc_list}
 
+def compute_f2_metrics(eval_prediction: EvalPrediction) -> Dict[str, float]:
+    """
+    Hàm tính toán F2-score (beta=2) cho bài toán phân loại.
+    F2-score chú trọng vào recall hơn precision.
+
+    Hàm này được thiết kế để hoạt động với framework 'swift' và 'transformers'.
+    """
+    # predictions đã được xử lý bởi `preprocess_logits_for_metrics`
+    # để trở thành các chỉ số của lớp dự đoán (predicted class indices).
+    preds = eval_prediction.predictions
+    labels = eval_prediction.label_ids
+
+    # Chuyển sang numpy array nếu là tensor
+    if isinstance(preds, torch.Tensor):
+        preds = preds.cpu().numpy()
+    if isinstance(labels, torch.Tensor):
+        labels = labels.cpu().numpy()
+
+    # Bỏ qua các token padding có giá trị -100 (giá trị mặc định của transformers)
+    mask = labels != -100
+    labels = labels[mask]
+    preds = preds[mask]
+
+    if labels.size == 0:
+        # Nếu không có nhãn nào hợp lệ sau khi lọc, trả về 0
+        return {'f2_score': 0.0}
+
+    # Tính F2-score.
+    # beta=2 tương ứng với công thức bạn cung cấp.
+    # average='macro': tính metric cho mỗi lớp rồi lấy trung bình (không trọng số).
+    #    Tốt cho dữ liệu mất cân bằng.
+    # average='weighted': lấy trung bình có trọng số theo số lượng mẫu mỗi lớp.
+    # zero_division=0: trả về 0 nếu một lớp không có trong nhãn thực tế.
+    f2 = f1_score(labels, preds, beta=2.0, average='macro', zero_division=0)
+
+    # Dictionary trả về phải có key mà bạn sẽ dùng để theo dõi model tốt nhất.
+    # Chúng ta sẽ dùng 'f2_score'.
+    return {'f2_score': f2}
 
 def compute_acc_metrics(eval_prediction: EvalPrediction,
                         *,
@@ -189,11 +227,21 @@ def preprocess_logits_for_acc(logits: torch.Tensor, labels: torch.Tensor) -> tor
     preds = logits.argmax(dim=-1)
     return preds
 
+def preprocess_logits_for_metrics(logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+    """
+    Hàm tiền xử lý chung: lấy argmax từ logits để có được dự đoán.
+    """
+    if isinstance(logits, (list, tuple)):
+        logits = logits[0]
+    preds = logits.argmax(dim=-1)
+    return preds
+
 
 # Add your own metric calculation method here, use --metric xxx to train
 METRIC_MAPPING = {
     'acc': (compute_acc_metrics, preprocess_logits_for_acc),
     'nlg': (compute_nlg_metrics, None),
+    'f2': (compute_f2_metrics, preprocess_logits_for_metrics)
 }
 
 
