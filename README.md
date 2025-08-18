@@ -126,13 +126,13 @@ Running Environment:
 | torch        | >=2.0        | 2.7.1               |                                           |
 | transformers | >=4.33       | 4.54.1              |                                           |
 | modelscope   | >=1.23       |                     |                                           |
-| peft         | >=0.11,<0.17 |                     |                                           |
+| peft         | >=0.11,<0.18 |                     |                                           |
 | flash_attn   |              | 2.7.4.post1/3.0.0b1 |                                           |
 | trl          | >=0.15,<0.21 | 0.20.0              | RLHF                                      |
 | deepspeed    | >=0.14       | 0.16.9              | Training                                  |
 | vllm         | >=0.5.1      | 0.10                | Inference/Deployment                      |
 | sglang       | >=0.4.6      | 0.4.9.post6         | Inference/Deployment                      |
-| lmdeploy     | >=0.5,<0.9   | 0.8                 | Inference/Deployment                      |
+| lmdeploy     | >=0.5   | 0.9.2                 | Inference/Deployment                      |
 | evalscope    | >=0.11       |                     | Evaluation                                |
 | gradio       |              | 5.32.1              | Web-UI/App                                |
 
